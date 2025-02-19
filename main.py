@@ -3,7 +3,7 @@ import sumolib
 import time
 
 # Path to the SUMO configuration file
-sumo_config_file = 'path_to_your_map.sumocfg'
+sumo_config_file = 'map.sumocfg'
 
 # Start SUMO in GUI mode with the configuration file
 sumo_binary = "sumo-gui"  # Use "sumo" for non-GUI mode, "sumo-gui" for GUI mode
