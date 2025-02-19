@@ -1,42 +1,42 @@
 import traci
-import sumolib
+import subprocess
 import time
 
-# Path to the SUMO configuration file
-sumo_config_file = 'map.sumocfg'
-
-# Start SUMO in GUI mode with the configuration file
-sumo_binary = "sumo-gui"  # Use "sumo" for non-GUI mode, "sumo-gui" for GUI mode
-
-def print_traffic_light_phases():
-    # Get the list of all traffic lights in the network
-    traffic_lights = traci.trafficlight.getIDList()
-    
-    for light_id in traffic_lights:
-        # Get the current phase of the traffic light
-        phase = traci.trafficlight.getPhase(light_id)
-        print(f"Traffic Light {light_id}: Current Phase = {phase}")
-
-# sumo-gui -c map.sumocfg --start --remote-port 4001 --step-length 0.02
 def run_simulation():
-    # Start the SUMO simulation with the provided configuration file
-    traci.start([sumo_binary, "-c", sumo_config_file, "--remote-port", "4001", "--step-length", "0.02"])
-    
-    # Start the simulation loop
+    # Path to the SUMO configuration file
+    sumo_config_file = 'map.sumocfg'
+
+    # Start SUMO in GUI mode with the configuration file
+    sumo_binary = "sumo-gui"
+
+    # Launch SUMO-GUI with TraCI port 4001
+    sumo_cmd = [sumo_binary, "-c", sumo_config_file, "--remote-port", "4001", "--step-length", "0.02"]
+    process = subprocess.Popen(sumo_cmd)
+
+    try:
+        # Wait for SUMO to initialize
+        time.sleep(2)  
+        main(process)
+    finally:
+        process.terminate()
+
+def main(process):
+    traci.init(port=4001)
     step = 0
-    while step < traci.simulation.getMinExpectedNumber():
-        traci.simulationStep()  # Perform a single simulation step
-        time.sleep(0.5)
-
-        # Print the traffic light phases every 10 steps
-        if step % 10 == 0:
-            print(f"Step {step}:")
-            print_traffic_light_phases()
-
-        step += 1
-    
-    # Close the simulation after running the loop
-    traci.close()
+    try:
+        while traci.simulation.getMinExpectedNumber() > 0:
+            traci.simulationStep()
+            if step % 10 == 0:
+                tl_ids = traci.trafficlight.getIDList()
+                print(f"\nStep {step}: Traffic Light Phases")
+                for tl_id in tl_ids:
+                    phase_idx = traci.trafficlight.getPhase(tl_id)
+                    state = traci.trafficlight.getRedYellowGreenState(tl_id)
+                    print(f"  {tl_id}: Phase {phase_idx} - State {state}")
+            step += 1
+    finally:
+        traci.close()
+        process.kill()
 
 if __name__ == "__main__":
     run_simulation()
