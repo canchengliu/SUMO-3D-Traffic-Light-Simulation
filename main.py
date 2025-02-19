@@ -24,7 +24,7 @@ def run_simulation():
     
     # Start the simulation loop
     step = 0
-    while step < 10000:  # Set an upper limit for the simulation steps
+    while step < traci.simulation.getMinExpectedNumber():
         traci.simulationStep()  # Perform a single simulation step
         time.sleep(0.5)
 
