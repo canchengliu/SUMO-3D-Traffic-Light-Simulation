@@ -26,6 +26,7 @@ def run_simulation():
     step = 0
     while step < 10000:  # Set an upper limit for the simulation steps
         traci.simulationStep()  # Perform a single simulation step
+        time.sleep(0.5)
 
         # Print the traffic light phases every 10 steps
         if step % 10 == 0:
